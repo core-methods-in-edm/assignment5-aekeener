@@ -1,7 +1,7 @@
 ---
 title: "Assignment 5 - Decision Trees"
-author: "Charles Lang"
-date: "November 9, 2016"
+author: "Abbey Keener"
+date: "November 16, 2017"
 output: html_document
 ---
 For this assignment we will be using data from the Assistments Intelligent Tutoring system. This system gives students hints based on how they perform on math problems. 
@@ -16,14 +16,14 @@ library(party)
 
 ## Part I
 ```{r}
-D1 <- 
+D1 <- read.csv("/Users/abbeykeener/HUDK Assignments/Assignment 5/intelligent_tutor.csv", sep=",", header=TRUE)
 ```
 
 ##Classification Tree
 First we will build a classification tree to predict which students ask a teacher for help, which start a new session, or which give up, based on whether or not the student completed a session (D1$complete) and whether or not they asked for hints (D1$hint.y). 
 ```{r}
 
-c.tree <- rpart(action ~ hint.y + complete, method="class", data=D1) #Notice the standard R notion for a formula X ~ Y
+c.tree <- rpart(action ~ hint.y + complete, method="class", data=D1) #Notice the standard R notion for a formula X ~ Y 
 
 #Look at the error of this tree
 printcp(c.tree)
@@ -59,6 +59,8 @@ plot(score_ctree)
 ```
 
 Please interpret the tree, which two behaviors do you think the teacher should most closely pay attemtion to?
+1. Whether students asked for hints or not (and how many hints they asked for). This is the most significant relationship at p<0.001. 
+2. How many problems they have completed before. Nodes 3 and 4 have big differences between intervene and no action and node 3 has the biggest N, and node 4 which shows people who didn't ask for a hint and completed more than 85 prior problems has the most students which need less action so the teacher should may closer attention to other students. 
 
 #Test Tree
 Upload the data "intelligent_tutor_new.csv". This is a data set of a differnt sample of students doing the same problems in the same system. We can use the tree we built for the previous data set to try to predict the "advice" we should give the teacher about these new students. 
@@ -66,7 +68,7 @@ Upload the data "intelligent_tutor_new.csv". This is a data set of a differnt sa
 ```{r}
 #Upload new data
 
-D2 <- 
+D2 <- read.csv("/Users/abbeykeener/HUDK Assignments/Assignment 5/intelligent_tutor_new.csv", sep=",", header=TRUE)
 
 #Generate predicted advice for new students based on tree generated from old students
 
@@ -74,4 +76,19 @@ D2$prediction <- predict(score_ctree, D2)
 
 ``` 
 ## Part III
-Compare the predicted advice with the actual advice that these studnts recieved. What is the difference between the observed and predicted results?
+Compare the predicted advice with the actual advice that these students recieved. What is the difference between the observed and predicted results?
+
+```{r}
+D2$advice <- ifelse(D2$score <=0.4, "intervene", ifelse(D2$score > 0.4 & D2$score <=0.8, "monitor", "no action"))
+#creating a new advice column in D2 independent of prediction using teachers rationale from D1
+#no action for all of them because they all have scores of 1 
+
+confMat <- table(D2$prediction,D2$advice)
+#shows frequency difference between predicted and actual advice using a confusion matrix 
+#predictions based on D1 model compared to advice based on D2 scores and score perameters from D1
+
+View(confMat)
+#because all advice is now no action because the scores are all 1, the predicted advice was monitor and actual was no action 84 times and it was accurate 116 times (where predicted and actual were both no action) it never predicted intervene 
+#Var1=predicted Var2=advice 
+
+```
